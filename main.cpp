@@ -39,26 +39,45 @@ struct sEnvelopeADSR {
 
 		// linear system
 		if (bKeyHold) {
-			if (dTime <= dTriggerOnTime + dAttackTime) {
-				dAmplitude = (dTime - dTriggerOnTime) / dAttackTime * dStartAmplitude;
+			double dLifeTime = dTime - dTriggerOnTime;
+			if (dLifeTime >= 0 && dLifeTime <= dAttackTime) {
+				dAmplitude = dLifeTime / dAttackTime * dStartAmplitude;
 			}
-			else if (dTime >= dTriggerOnTime + dAttackTime && dTime <= dTriggerOnTime + dAttackTime + dDecayTime) {
-				dAmplitude = dStartAmplitude - (dTime - dTriggerOnTime - dAttackTime) / dDecayTime * (dStartAmplitude - dSustainAmplitude);
+			else if (dLifeTime >= dAttackTime && dLifeTime <= dAttackTime + dDecayTime) {
+				dAmplitude = dStartAmplitude - (dLifeTime - dAttackTime) / dDecayTime * (dStartAmplitude - dSustainAmplitude);
 			}
-			else {
+			else if (dLifeTime >= dAttackTime + dDecayTime) {
 				dAmplitude = dSustainAmplitude;
 			}
-		}		
-		else if (dTime <= dTriggerOffTime + dReleaseTime) {
-			dAmplitude = dSustainAmplitude - (dTime - dTriggerOffTime) / dReleaseTime * dSustainAmplitude;
+		}
+		// if this moment is still within release phase
+		else if (dTime - dTriggerOffTime <= dReleaseTime) {
+			double dActiveTime = dTriggerOffTime - dTriggerOnTime;			
+			// The amplitude at the time of releasing the key:
+			double dMaxAmplitude = 0.0;
+
+			// if the key is released during attack phase
+			if (dActiveTime >= 0 && dActiveTime <= dAttackTime) {				
+				dMaxAmplitude = dActiveTime / dAttackTime * dStartAmplitude;
+			}
+			// if the key is released during decay phase
+			else if (dActiveTime >= dAttackTime && dActiveTime <= dAttackTime + dReleaseTime) {
+				dMaxAmplitude = dStartAmplitude - (dActiveTime - dAttackTime) / dDecayTime * (dStartAmplitude - dSustainAmplitude);
+			}
+			// if the key is release during sustain phase
+			else if (dActiveTime >= dAttackTime + dDecayTime) {
+				dMaxAmplitude = dSustainAmplitude;
+			}
+
+			dAmplitude = dMaxAmplitude - (dTime - dTriggerOffTime) / dReleaseTime * dMaxAmplitude;
 		}
 	
-		// refuse to output sound we don't care about
+		// refuse to output sounds we don't care about
 		if (dAmplitude <= 0.0001) {
 			dAmplitude = 0.0;
 		}
 
-		// defensive programming
+		// just to be safe:
 		if (abs(dAmplitude) >= 1.0) {
 			dAmplitude = 0.0;
 		}
@@ -148,13 +167,14 @@ int main()
 		for (int k = 0; k < keyboard.size(); ++k) {			
 			// detect the pressed key, i.e. the key whose highest bit is set
 			if (GetAsyncKeyState(keyboard[k]) & 0x8000) {
-				// play the note whose frequency is: note_freq = base_note * (beta ^ k)
-				dFrequencyOutput = dOctaveBaseFrequency * pow(d12thRootOf2, k);
+				// play the note whose frequency is: note_freq = base_note * (beta ^ k)				
 				bKeyPressed = true;
 				// if the user changes key:
-				if (currentKey != k)
+				if (currentKey != k) {
 					envelope.NoteOn(sound.GetTime());
-				currentKey = k;
+					dFrequencyOutput = dOctaveBaseFrequency * pow(d12thRootOf2, k);
+					currentKey = k;
+				}				
 			}
 		}	
 		if (!bKeyPressed) {
