@@ -1,9 +1,10 @@
 {
     "configurations": [
         {
-            "name": "Win32",
+            "name": "Win32",            
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}\\SDL2.0\\include\\SDL2"
             ],
             "defines": [
                 "_DEBUG",
@@ -14,8 +15,15 @@
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "windows-gcc-x64",
-            "compilerArgs": [
-                "-lwinmm"
+            "compilerArgs": [                                
+                "-I${fileDirname}\\SDL2.0\\include\\SDL2",
+                "-L${fileDirname}\\SDL2.0\\lib",
+                "-w",
+                "-lmingw32",
+                "-lSDL2main",
+                "-lSDL2",
+                "-lSDL2_mixer",
+                "-lWinmm"
             ]
         }
     ],

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "olcNoiseMaker.h"
+#include <SDL.h>
 
 enum soundType {
 	SINE_WAVE,
@@ -136,7 +137,7 @@ double MakeNoise(double dTime) {
 	return dOutput;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	// Get all sound hardware
 	std::vector<std::wstring> devices = olcNoiseMaker<short>::Enumerate();
