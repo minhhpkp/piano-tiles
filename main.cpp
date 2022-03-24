@@ -2,15 +2,19 @@
 #include "olcNoiseMaker.h"
 #include <SDL.h>
 #include "synthesizer.h"
+#include <vector>
 
-std::atomic<double> dFrequencyOutput = 0.0;
 const double dOctaveBaseFrequency = 220.0; // A2
 const double d12thRootOf2 = pow(2.0, 1.0 / 12.0); // beta
 
 synth::instrument *voice = nullptr;
+std::vector<synth::note> vecNotes;
 
 double MakeNoise(double dTime) {
-	double dOutput = voice->sound(dFrequencyOutput, dTime) * 0.4;
+	double dOutput = 0.0;
+	for (const auto& n: vecNotes) {
+		dOutput += voice->sound(n, dTime) * 0.4;
+	}
 	return dOutput;
 }
 
@@ -21,7 +25,7 @@ int main(int argc, char* argv[]) {
 	// Display findings
 	for (auto d : devices) 
 		std::wcout << "Found Output Device: " << d << std::endl;
-	std::wcout << "Using Device: " << devices[0] << std::endl;
+	std::wcout << "Using Device: " << devices[0] << '\n' << std::endl;
 
 	// Create sound machine!!
 	olcNoiseMaker<short> sound(devices[0], 44100, 1, 8, 512);
@@ -32,37 +36,50 @@ int main(int argc, char* argv[]) {
 	voice = new synth::instrBell();
 
 	// print the keyboard:
-	std::wcout << "| | S | | | F | G | | | J | K | L | |   |\n"
+	std::wcout << "| |   | | |   |   | | |   |   |   | |   |\n"
+				  "| | S | | | F | G | | | J | K | L | |   |\n"
 				  "| |___| | |___|___| | |___|___|___| |   |\n"
+				  "|   |   |   |   |   |   |   |   |   |   |\n"
 				  "| Z | X | C | V | B | N | M | , | . | / |\n"
 				  "|___|___|___|___|___|___|___|___|___|___|\n"
 				  "  A   B   C   D   E   F   G   A   B   C\n";
 	
 	// Add the above keyboard: ZSXCFVGBNJMK,L./, based on virtual key codes:
 	const std::vector<int> keyboard = {0x5A, 0x53, 0x58, 0x43, 0x46, 0x56, 0x47, 0x42, 0x4E, 0x4A, 0x4D, 0x4B, VK_OEM_COMMA, 0x4C, VK_OEM_PERIOD, VK_OEM_2};
-	int currentKey = -1;		
+
 	while (true) {
-		bool bKeyPressed = false;	
-		for (int k = 0; k < keyboard.size(); ++k) {			
-			// detect the pressed key, i.e. the key whose highest bit is set
+		double dTimeNow = sound.GetTime();
+
+		for (int k = 0; k < int(keyboard.size()); ++k) {
+			synth::note curNote;
+			curNote.dFreq = dOctaveBaseFrequency * pow(d12thRootOf2, k);
+			// the current note is already active 
+			auto noteFound = std::find_if(vecNotes.begin(), vecNotes.end(), [&curNote](const synth::note& n) {
+				return n.dFreq == curNote.dFreq;
+			});
+
 			if (GetAsyncKeyState(keyboard[k]) & 0x8000) {
-				// play the note whose frequency is: note_freq = base_note * (beta ^ k)				
-				bKeyPressed = true;
-				// if the user changes key:
-				if (currentKey != k) {
-					voice->env.noteOn(sound.GetTime());
-					dFrequencyOutput = dOctaveBaseFrequency * pow(d12thRootOf2, k);
-					currentKey = k;
-				}				
+				// if user starts playing new note
+				if (noteFound == vecNotes.end()) {
+					curNote.dTimeOn = dTimeNow;
+					curNote.active = true;
+					vecNotes.push_back(curNote);	
+				}
 			}
-		}	
-		if (!bKeyPressed) {
-			// if the key has just been released
-			if (currentKey != -1) {
-				// play the release phase
-				voice->env.noteOff(sound.GetTime());
-				currentKey = -1;
-			}															
+			else {
+				// the key is not pressed but it's in vecNotes
+				if (noteFound != vecNotes.end()) {
+					// put it in release mode if it's still active
+					if (noteFound->active) {
+						noteFound->dTimeOff = dTimeNow;
+						noteFound->active = false;
+					}
+					// or erase it from vecNotes if its release phase has ended
+					else if (dTimeNow - noteFound->dTimeOff > voice->env.dReleaseTime) {
+						vecNotes.erase(noteFound);
+					}
+				}
+			}
 		}
 	}
 	

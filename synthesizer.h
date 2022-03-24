@@ -11,6 +11,14 @@ namespace synth {
         RANDOM_NOISE
     };
 
+    struct note {
+        double dFreq = 0.0;
+        double dTimeOn = 0.0;
+        double dTimeOff = 0.0;
+        double dInitAmplitude = 0.0;
+        bool active = false;
+    };
+
     inline double w(double dHertz);
     double osc(double dHertz, double dTime, soundType type, double dLFOAmplitude = 0.0, double dLFOFrequency = 0.0);
     struct sEnvelopeADSR {
@@ -20,29 +28,24 @@ namespace synth {
         double dSustainAmplitude = 0.8;
         double dReleaseTime = 0.1;
 
-        bool bNoteOn = false;
-        double dTriggeredOn = 0.0;
-        double dTriggeredOff = 0.0;
-
-        double getAmplitude(double dTime);
-        void noteOn(double dTime);
-        void noteOff(double dTime);
+        double getAmplitude(double dTime, double dTriggeredOn, double dTriggeredOff);
     };
 
     struct instrument {
         sEnvelopeADSR env;
-        virtual double sound(double dFrequency, double dTime) = 0;
+        virtual double sound(const note& n, double dTime) = 0;
     };
 
     struct instrBell : public instrument {
         instrBell();
-        double sound(double dFrequency, double dTime);
+        double sound(const note& n, double dTime);
     };    
 
     struct instrHarmonica : public instrument {
         instrHarmonica();
-        double sound(double dFrequency, double dTime);
+        double sound(const note& n, double dTime);
     };
+
 }
 
 #endif // SYNTHESIZER_H

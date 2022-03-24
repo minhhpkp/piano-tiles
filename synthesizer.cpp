@@ -7,7 +7,6 @@ namespace synth {
     inline double w(double dHertz) {
         return 2 * PI * dHertz;
     }
-
     double osc(double dHertz, double dTime, soundType type, double dLFOAmplitude /*= 0.0*/, double dLFOFrequency /*= 0.0*/) {
         double dFrequency = w(dHertz) * dTime + dLFOAmplitude * dHertz * dTime * sin(w(dLFOFrequency) * dTime);
         
@@ -37,11 +36,10 @@ namespace synth {
 
         return 0.0;
     }
-
     
-    double sEnvelopeADSR::getAmplitude(double dTime) {
+    double sEnvelopeADSR::getAmplitude(double dTime, double dTriggeredOn, double dTriggeredOff) {
         double dAmplitude = 0.0;
-
+        bool bNoteOn = dTriggeredOn > dTriggeredOff;
         if (bNoteOn) {
             double dLifeTime = dTime - dTriggeredOn;
             if (dLifeTime >= 0 && dLifeTime <= dAttackTime) {
@@ -72,25 +70,15 @@ namespace synth {
             else if (dActiveTime >= dActiveTime + dDecayTime) {
                 dReleaseAmplitude = dSustainAmplitude;
             }
-
             dAmplitude = dReleaseAmplitude - (dTime - dTriggeredOff) / dReleaseTime * dReleaseAmplitude;
         }
-
 
         if (dAmplitude <= 0.0001) {
             dAmplitude = 0.0;
         }
-
         return dAmplitude;
     }
-    void sEnvelopeADSR::noteOn(double dTime) {
-        dTriggeredOn = dTime;
-        bNoteOn = true;
-    }
-    void sEnvelopeADSR::noteOff(double dTime) {
-        dTriggeredOff = dTime;
-        bNoteOn = false;
-    }
+    
     
     instrBell::instrBell() {        
         env.dAttackTime = 0.01;
@@ -99,11 +87,11 @@ namespace synth {
         env.dSustainAmplitude = 0.0;
         env.dReleaseTime = 1.0;
     }
-    double instrBell::sound(double dFrequency, double dTime) {
-        double dOutput = env.getAmplitude(dTime) * (
-            + 1.0 * osc(dFrequency * 2.0, dTime, SINE_WAVE, 5.0, 0.001)
-            + 0.5 * osc(dFrequency * 3.0, dTime, SINE_WAVE)
-            + 0.25 * osc(dFrequency * 4.0, dTime, SINE_WAVE)
+    double instrBell::sound(const note& n, double dTime) {
+        double dOutput = env.getAmplitude(dTime, n.dTimeOn, n.dTimeOff) * (
+            + 1.0 * osc(n.dFreq * 2.0, dTime, SINE_WAVE, 5.0, 0.001)
+            + 0.5 * osc(n.dFreq * 3.0, dTime, SINE_WAVE)
+            + 0.25 * osc(n.dFreq * 4.0, dTime, SINE_WAVE)
         );
         return dOutput / (1.0 + 0.5 + 0.25);
     }
@@ -115,11 +103,11 @@ namespace synth {
         env.dSustainAmplitude = 0.9;
         env.dReleaseTime = 0.1;
     }
-    double instrHarmonica::sound(double dFrequency, double dTime) {
-        double dOutput = env.getAmplitude(dTime) * (
-            + 1.0 * osc(dFrequency, dTime, SQUARE_WAVE, 5.0, 0.001)
-            + 0.5 * osc(dFrequency * 1.5, dTime, SQUARE_WAVE)
-            + 0.25 * osc(dFrequency * 2.0, dTime, SQUARE_WAVE)
+    double instrHarmonica::sound(const note& n, double dTime) {
+        double dOutput = env.getAmplitude(dTime, n.dTimeOn, n.dTimeOff) * (
+            + 1.0 * osc(n.dFreq, dTime, SQUARE_WAVE, 5.0, 0.001)
+            + 0.5 * osc(n.dFreq * 1.5, dTime, SQUARE_WAVE)
+            + 0.25 * osc(n.dFreq * 2.0, dTime, SQUARE_WAVE)
             + 0.05 * osc(0, dTime, RANDOM_NOISE)
         );
         return dOutput;
