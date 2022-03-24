@@ -9,6 +9,7 @@
 				"-fdiagnostics-color=always",
 				"-g",
 				"${file}",
+				"${fileDirname}\\synthesizer.cpp",
 				"-I${fileDirname}\\SDL2.0\\include\\SDL2",
 				"-L${fileDirname}\\SDL2.0\\lib",
 				"-w",
