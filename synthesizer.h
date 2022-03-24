@@ -1,7 +1,10 @@
 #ifndef SYNTHESIZER_H
 #define SYNTHESIZER_H
 
-namespace synth {
+namespace synth {    
+    const double dOctaveBaseFrequency = 220.0; // A2
+    const double d12thRootOf2 = pow(2.0, 1.0 / 12.0); // beta
+
     enum soundType {
         SINE_WAVE,
         SQUARE_WAVE,
@@ -12,11 +15,12 @@ namespace synth {
     };
 
     struct note {
-        double dFreq = 0.0;
+        // use the index of the key to identify it rather than its frequency for efficiency
+        int id = 0;
         double dTimeOn = 0.0;
         double dTimeOff = 0.0;
         double dInitAmplitude = 0.0;
-        bool active = false;
+        double getFreq() const;
     };
 
     inline double w(double dHertz);

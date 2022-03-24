@@ -4,9 +4,6 @@
 #include "synthesizer.h"
 #include <vector>
 
-const double dOctaveBaseFrequency = 220.0; // A2
-const double d12thRootOf2 = pow(2.0, 1.0 / 12.0); // beta
-
 synth::instrument *voice = nullptr;
 std::vector<synth::note> vecNotes;
 
@@ -49,35 +46,33 @@ int main(int argc, char* argv[]) {
 
 	while (true) {
 		double dTimeNow = sound.GetTime();
-
 		for (int k = 0; k < int(keyboard.size()); ++k) {
-			synth::note curNote;
-			curNote.dFreq = dOctaveBaseFrequency * pow(d12thRootOf2, k);
-			// the current note is already active 
-			auto noteFound = std::find_if(vecNotes.begin(), vecNotes.end(), [&curNote](const synth::note& n) {
-				return n.dFreq == curNote.dFreq;
+			auto noteFound = std::find_if(vecNotes.begin(), vecNotes.end(), [&k](const synth::note& n) {
+				return n.id == k;
 			});
 
+			// if the key is pressed
 			if (GetAsyncKeyState(keyboard[k]) & 0x8000) {
-				// if user starts playing new note
+				// if the note is not active, start playing it
 				if (noteFound == vecNotes.end()) {
-					curNote.dTimeOn = dTimeNow;
-					curNote.active = true;
-					vecNotes.push_back(curNote);	
+					synth::note newNote;
+					newNote.id = k;
+					newNote.dTimeOn = dTimeNow;
+					vecNotes.push_back(newNote);
 				}
+				// if the note is active, do nothing as the user simply keeps holding the key
 			}
 			else {
-				// the key is not pressed but it's in vecNotes
+				// if the key isn't pressed and the note is still active
 				if (noteFound != vecNotes.end()) {
-					// put it in release mode if it's still active
-					if (noteFound->active) {
+					// either put it in release mode
+					if (noteFound->dTimeOff < noteFound->dTimeOn) {
 						noteFound->dTimeOff = dTimeNow;
-						noteFound->active = false;
 					}
-					// or erase it from vecNotes if its release phase has ended
+					// or erase it if its release mode has finished
 					else if (dTimeNow - noteFound->dTimeOff > voice->env.dReleaseTime) {
 						vecNotes.erase(noteFound);
-					}
+					}					
 				}
 			}
 		}

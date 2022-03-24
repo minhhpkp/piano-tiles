@@ -37,6 +37,10 @@ namespace synth {
         return 0.0;
     }
     
+    double note::getFreq() const {
+        return dOctaveBaseFrequency * pow(d12thRootOf2, id);
+    }
+
     double sEnvelopeADSR::getAmplitude(double dTime, double dTriggeredOn, double dTriggeredOff) {
         double dAmplitude = 0.0;
         bool bNoteOn = dTriggeredOn > dTriggeredOff;
@@ -79,7 +83,6 @@ namespace synth {
         return dAmplitude;
     }
     
-    
     instrBell::instrBell() {        
         env.dAttackTime = 0.01;
         env.dDecayTime = 1.0;
@@ -89,9 +92,9 @@ namespace synth {
     }
     double instrBell::sound(const note& n, double dTime) {
         double dOutput = env.getAmplitude(dTime, n.dTimeOn, n.dTimeOff) * (
-            + 1.0 * osc(n.dFreq * 2.0, dTime, SINE_WAVE, 5.0, 0.001)
-            + 0.5 * osc(n.dFreq * 3.0, dTime, SINE_WAVE)
-            + 0.25 * osc(n.dFreq * 4.0, dTime, SINE_WAVE)
+            + 1.0 * osc(n.getFreq() * 2.0, dTime, SINE_WAVE, 5.0, 0.001)
+            + 0.5 * osc(n.getFreq() * 3.0, dTime, SINE_WAVE)
+            + 0.25 * osc(n.getFreq() * 4.0, dTime, SINE_WAVE)
         );
         return dOutput / (1.0 + 0.5 + 0.25);
     }
@@ -105,9 +108,9 @@ namespace synth {
     }
     double instrHarmonica::sound(const note& n, double dTime) {
         double dOutput = env.getAmplitude(dTime, n.dTimeOn, n.dTimeOff) * (
-            + 1.0 * osc(n.dFreq, dTime, SQUARE_WAVE, 5.0, 0.001)
-            + 0.5 * osc(n.dFreq * 1.5, dTime, SQUARE_WAVE)
-            + 0.25 * osc(n.dFreq * 2.0, dTime, SQUARE_WAVE)
+            + 1.0 * osc(n.getFreq(), dTime, SQUARE_WAVE, 5.0, 0.001)
+            + 0.5 * osc(n.getFreq() * 1.5, dTime, SQUARE_WAVE)
+            + 0.25 * osc(n.getFreq() * 2.0, dTime, SQUARE_WAVE)
             + 0.05 * osc(0, dTime, RANDOM_NOISE)
         );
         return dOutput;
