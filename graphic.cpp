@@ -9,7 +9,10 @@
 int main(int argc, char* argv[]) {
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
-    init(window, renderer);
+
+    Screen s(1897, 720);
+
+    s.init(window, renderer);
 
     LTexture keyboardTexture;
     keyboardTexture.loadFromFile("graphic_files/keyboardClipArt.png", renderer);
@@ -92,7 +95,7 @@ int main(int argc, char* argv[]) {
 
     std::vector<LTexture> keyTextures(keyboardScancodes.size());
     SDL_Color colorKey{0xFF, 0xFF, 0xFF, 0xFF};
-
+    // loading each key's image into its texture
     for (size_t i = 0; i < keyTextures.size(); ++i) {
         std::string path = "graphic_files/individual_keys/" + scancode_to_keyname.at(keyboardScancodes[i]) + "pressed.png";
         keyTextures[i].loadFromFile(path, renderer, &colorKey);
@@ -100,21 +103,25 @@ int main(int argc, char* argv[]) {
 
     bool quit = false;
     SDL_Event e;
+    // main loop
     while (!quit) {
+        // handle quit event
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT) {
                 quit = true;
             }
         }
         
+        // clear the screen
         SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(renderer);
         
+        // use bottom viewport for rendering the keyboard
         SDL_Rect bottomViewport;
         bottomViewport.x = 0;
-        bottomViewport.y = SCREEN_HEIGHT / 2;
-        bottomViewport.w = SCREEN_WIDTH;
-        bottomViewport.h = SCREEN_HEIGHT / 2;
+        bottomViewport.y = s.SCREEN_HEIGHT / 2;
+        bottomViewport.w = s.SCREEN_WIDTH;
+        bottomViewport.h = s.SCREEN_HEIGHT / 2;
         SDL_RenderSetViewport(renderer, &bottomViewport);
         
         keyboardTexture.render(renderer, 0, 0);
@@ -134,6 +141,6 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
     }
 
-    close(window, renderer);
+    s.close(window, renderer);
     return 0;
 }
