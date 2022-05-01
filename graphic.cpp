@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
         SDL_SCANCODE_SEMICOLON, // G#3
         SDL_SCANCODE_SLASH, // A4
         SDL_SCANCODE_APOSTROPHE, // A4#
+        SDL_SCANCODE_RSHIFT, // B4
     };
 
     const std::unordered_map<SDL_Scancode, std::string> scancode_to_keyname{
@@ -91,7 +92,8 @@ int main(int argc, char* argv[]) {
         {SDL_SCANCODE_PERIOD, "PERIOD"},
         {SDL_SCANCODE_SEMICOLON, "SEMICOLON"},
         {SDL_SCANCODE_SLASH, "SLASH"},
-        {SDL_SCANCODE_APOSTROPHE, "APOSTROPHE"}
+        {SDL_SCANCODE_APOSTROPHE, "APOSTROPHE"},
+        {SDL_SCANCODE_RSHIFT, "RSHIFT"}
     };
 
     std::vector<LTexture> keyTextures(keyboardScancodes.size());
