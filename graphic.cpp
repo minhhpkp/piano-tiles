@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include "box.hpp"
 
 int main(int argc, char* argv[]) {
     SDL_Window *window = nullptr;
@@ -101,6 +102,53 @@ int main(int argc, char* argv[]) {
         keyTextures[i].loadFromFile(path, renderer, &colorKey);
     }
 
+    Box box[] = {
+        {renderer, 371, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 371 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2, 0, 24, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 24 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 371 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 24 + 2 + 26 + 2, 0, 32, 100, {0, 0, 0xff, 0xff}},
+        /* 7 pixels */
+        {renderer, 740, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 740 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2, 0, 24, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 24 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 740 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 24 + 2 + 26 + 2, 0, 32, 100, {0, 0, 0xff, 0xff}},
+        /* 7 pixels */
+        {renderer, 1109, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 1109 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2, 0, 32, 100, {0xff, 0, 0, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2, 0, 24, 100, {0, 0, 0xff, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 24 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
+        {renderer, 1109 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 32 + 2 + 32 + 2 + 26 + 2 + 29 + 2 + 26 + 2 + 24 + 2 + 26 + 2, 0, 32, 100, {0, 0, 0xff, 0xff}}
+    };
+
+    // viewport for rendering the keyboard
+    SDL_Rect bottomViewport{0, s.SCREEN_HEIGHT - keyboardTexture.getHeight(), s.SCREEN_WIDTH, keyboardTexture.getHeight()};
+
+    // viewport for rendering the falling boxes
+    SDL_Rect topViewport{0, 0, s.SCREEN_WIDTH, s.SCREEN_HEIGHT - keyboardTexture.getHeight()};
+
     bool quit = false;
     SDL_Event e;
     // main loop
@@ -116,27 +164,23 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
         SDL_RenderClear(renderer);
         
-        // use bottom viewport for rendering the keyboard
-        SDL_Rect bottomViewport;
-        bottomViewport.x = 0;
-        bottomViewport.y = s.SCREEN_HEIGHT / 2;
-        bottomViewport.w = s.SCREEN_WIDTH;
-        bottomViewport.h = s.SCREEN_HEIGHT / 2;
+        // render the keyboard
         SDL_RenderSetViewport(renderer, &bottomViewport);
-        
         keyboardTexture.render(renderer, 0, 0);
 
-        int numkeys = 0;
-        
-        const Uint8 *currentKeyState = SDL_GetKeyboardState(&numkeys);
-
+        const Uint8 *currentKeyState = SDL_GetKeyboardState(nullptr);
         for (size_t i = 0; i < keyboardScancodes.size(); ++i) {
             if (currentKeyState[keyboardScancodes[i]]) {
                 keyTextures[i].render(renderer, 0, 0);
             }
         }
 
-        SDL_Delay(10);
+        // render the boxes
+        SDL_RenderSetViewport(renderer, &topViewport);
+        for (auto& b: box) {
+            b.move(s.SCREEN_HEIGHT -keyboardTexture.getHeight());
+            b.render();
+        }
 
         SDL_RenderPresent(renderer);
     }
