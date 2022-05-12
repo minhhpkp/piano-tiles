@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include "box.hpp"
+#include <deque>
 
 int main(int argc, char* argv[]) {
     SDL_Window *window = nullptr;
@@ -17,6 +18,8 @@ int main(int argc, char* argv[]) {
 
     LTexture keyboardTexture;
     keyboardTexture.loadFromFile("graphic_files/keyboardClipArt.png", renderer);
+
+    const int numberOfKeys = 12 * 3;
 
     const std::vector<SDL_Scancode> keyboardScancodes = {
         SDL_SCANCODE_Q, // C1
@@ -96,7 +99,7 @@ int main(int argc, char* argv[]) {
         {SDL_SCANCODE_RSHIFT, "RSHIFT"}
     };
 
-    std::vector<LTexture> keyTextures(keyboardScancodes.size());
+    std::vector<LTexture> keyTextures(numberOfKeys);
     SDL_Color colorKey{0xFF, 0xFF, 0xFF, 0xFF};
     // loading each key's image into its texture
     for (size_t i = 0; i < keyTextures.size(); ++i) {
@@ -104,7 +107,8 @@ int main(int argc, char* argv[]) {
         keyTextures[i].loadFromFile(path, renderer, &colorKey);
     }
 
-    Box box[] = {
+    // setting the width and the x coordinate of the box correspond to the ith note
+    Box boxes[numberOfKeys] = {
         {renderer, 371, 0, 32, 100, {0xff, 0, 0, 0xff}},
         {renderer, 371 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
         {renderer, 371 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
@@ -153,6 +157,8 @@ int main(int argc, char* argv[]) {
 
     bool quit = false;
     SDL_Event e;
+    std::deque<Box> q;
+    
     // main loop
     while (!quit) {
         // handle quit event
@@ -160,6 +166,13 @@ int main(int argc, char* argv[]) {
             if (e.type == SDL_QUIT) {
                 quit = true;
             }
+            for (auto &box: q) {
+                box.move(s.SCREEN_HEIGHT);
+            }
+        }
+
+        while (!q.empty() && q.front().getH() == 0) {
+            q.pop_front();
         }
         
         // clear the screen
@@ -174,14 +187,14 @@ int main(int argc, char* argv[]) {
         for (size_t i = 0; i < keyboardScancodes.size(); ++i) {
             if (currentKeyState[keyboardScancodes[i]]) {
                 keyTextures[i].render(renderer, 0, 0);
+                q.push_back(boxes[i]);
             }
         }
-
-        // render the boxes
+        
         SDL_RenderSetViewport(renderer, &topViewport);
-        for (auto& b: box) {
-            b.move(s.SCREEN_HEIGHT -keyboardTexture.getHeight());
-            b.render();
+        for (auto &box: q) {
+            box.move(s.SCREEN_HEIGHT);
+            box.render();
         }
 
         SDL_RenderPresent(renderer);
