@@ -2,7 +2,7 @@
 #define SYNTHESIZER_H
 
 namespace synth {    
-    const double dOctaveBaseFrequency = 220.0; // A2
+    const double dOctaveBaseFrequency = 130.813; // C3
     const double d12thRootOf2 = pow(2.0, 1.0 / 12.0); // beta
 
     enum soundType {
@@ -21,6 +21,7 @@ namespace synth {
         double dTimeOff = 0.0;
         double dInitAmplitude = 0.0;
         double getFreq() const;
+        note(int id = 0, int dTimeOn = 0.0): id(id), dTimeOn(dTimeOn) {}
     };
 
     inline double w(double dHertz);

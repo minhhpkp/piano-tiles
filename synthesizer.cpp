@@ -43,8 +43,8 @@ namespace synth {
 
     double sEnvelopeADSR::getAmplitude(double dTime, double dTriggeredOn, double dTriggeredOff) {
         double dAmplitude = 0.0;
-        bool bNoteOn = dTriggeredOn > dTriggeredOff;
-        if (bNoteOn) {
+
+        if (dTriggeredOn > dTriggeredOff) {
             double dLifeTime = dTime - dTriggeredOn;
             if (dLifeTime >= 0 && dLifeTime <= dAttackTime) {
                 dAmplitude = (dLifeTime / dAttackTime) * dStartAmplitude;
@@ -96,7 +96,7 @@ namespace synth {
             + 0.5 * osc(n.getFreq() * 3.0, dTime, SINE_WAVE)
             + 0.25 * osc(n.getFreq() * 4.0, dTime, SINE_WAVE)
         );
-        return dOutput / (1.0 + 0.5 + 0.25);
+        return dOutput / 1.75;
     }
 
     instrHarmonica::instrHarmonica() {
@@ -113,6 +113,6 @@ namespace synth {
             + 0.25 * osc(n.getFreq() * 2.0, dTime, SQUARE_WAVE)
             + 0.05 * osc(0, dTime, RANDOM_NOISE)
         );
-        return dOutput;
+        return dOutput / 1.8;
     }
 }

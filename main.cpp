@@ -7,12 +7,15 @@
 synth::instrument *voice = nullptr;
 std::vector<synth::note> vecNotes;
 
+std::mutex muxNotes;
+
 double MakeNoise(double dTime) {
+	std::unique_lock<std::mutex> lm(muxNotes);
 	double dOutput = 0.0;
 	for (const auto& n: vecNotes) {
-		dOutput += voice->sound(n, dTime) * 0.4;
+		dOutput += voice->sound(n, dTime);
 	}
-	return dOutput;
+	return dOutput / vecNotes.size();
 }
 
 int main(int argc, char* argv[]) {
@@ -30,7 +33,7 @@ int main(int argc, char* argv[]) {
 	// Link noise function with sound machine
 	sound.SetUserFunction(MakeNoise);
 
-	voice = new synth::instrBell();
+	voice = new synth::instrHarmonica();
 
 	// print the keyboard:
 	std::wcout << "| |   | | |   |   | | |   |   |   | |   |\n"
@@ -53,17 +56,17 @@ int main(int argc, char* argv[]) {
 
 			// if the key is pressed
 			if (GetAsyncKeyState(keyboard[k]) & 0x8000) {
-				// if the note is not active, start playing it
+				// if the note has not been active yet, start playing it
 				if (noteFound == vecNotes.end()) {
 					synth::note newNote;
 					newNote.id = k;
 					newNote.dTimeOn = dTimeNow;
 					vecNotes.push_back(newNote);
 				}
-				// if the note is active, do nothing as the user simply keeps holding the key
+				// if the note is still being active, do nothing as the user simply keeps holding the key
 			}
 			else {
-				// if the key isn't pressed and the note is still active
+				// if the key is not pressed anymore and the note is still being active
 				if (noteFound != vecNotes.end()) {
 					// either put it in release mode
 					if (noteFound->dTimeOff < noteFound->dTimeOn) {
