@@ -1,6 +1,8 @@
 #ifndef SYNTHESIZER_H
 #define SYNTHESIZER_H
 
+#include <cmath>
+
 namespace synth {    
     const double dOctaveBaseFrequency = 130.813; // C3
     const double d12thRootOf2 = pow(2.0, 1.0 / 12.0); // beta

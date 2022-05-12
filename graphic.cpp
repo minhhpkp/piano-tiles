@@ -8,7 +8,57 @@
 #include "box.hpp"
 #include <deque>
 
+// add sound to the UI
+#include "synthesizer.h"
+#include "olcNoiseMaker.h"
+#include <algorithm>
+
+
+synth::instrument *voice = nullptr;
+std::vector<synth::note> vecNotes;
+
+std::mutex muxNotes;
+
+double MakeNoise(double dTime) {
+	std::unique_lock<std::mutex> lm(muxNotes);
+	double dOutput = 0.0;
+	for (const auto& n: vecNotes) {
+		dOutput += voice->sound(n, dTime);
+	}
+	return dOutput / vecNotes.size();
+}
+
 int main(int argc, char* argv[]) {
+    // Get all sound hardware
+	std::vector<std::wstring> devices = olcNoiseMaker<short>::Enumerate();
+
+	// Display findings
+	for (auto d : devices) 
+		std::wcout << "Found Output Device: " << d << std::endl;
+	std::wcout << "Using Device: " << devices[0] << '\n' << std::endl;
+
+	// Create sound machine!!
+	olcNoiseMaker<short> sound(devices[0], 44100, 1, 8, 512);
+
+	// Link noise function with sound machine
+	sound.SetUserFunction(MakeNoise);
+
+    // Let the user choose voice
+    while (voice == nullptr) {
+        std::cout << "Choose voice, Harmonica or Bell (H or B): ";
+        char c;
+        std::cin >> c;
+        if (c == 'H' || c == 'h') {
+            voice = new synth::instrHarmonica();
+            break;
+        }
+        else if (c == 'B' || c == 'b') {
+            voice = new synth::instrBell();
+            break;
+        }
+    }
+
+    // Create windows
     SDL_Window *window = nullptr;
     SDL_Renderer *renderer = nullptr;
 
@@ -19,7 +69,7 @@ int main(int argc, char* argv[]) {
     LTexture keyboardTexture;
     keyboardTexture.loadFromFile("graphic_files/keyboardClipArt.png", renderer);
 
-    const int numberOfKeys = 12 * 3;
+    const int KEYBOARD_SIZE = 12 * 3;
 
     const std::vector<SDL_Scancode> keyboardScancodes = {
         SDL_SCANCODE_Q, // C1
@@ -99,7 +149,7 @@ int main(int argc, char* argv[]) {
         {SDL_SCANCODE_RSHIFT, "RSHIFT"}
     };
 
-    std::vector<LTexture> keyTextures(numberOfKeys);
+    std::vector<LTexture> keyTextures(KEYBOARD_SIZE);
     SDL_Color colorKey{0xFF, 0xFF, 0xFF, 0xFF};
     // loading each key's image into its texture
     for (size_t i = 0; i < keyTextures.size(); ++i) {
@@ -108,7 +158,7 @@ int main(int argc, char* argv[]) {
     }
 
     // setting the width and the x coordinate of the box correspond to the ith note
-    Box boxes[numberOfKeys] = {
+    Box boxes[KEYBOARD_SIZE] = {
         {renderer, 371, 0, 32, 100, {0xff, 0, 0, 0xff}},
         {renderer, 371 + 32 + 2, 0, 26, 100, {0, 0xff, 0, 0xff}},
         {renderer, 371 + 32 + 2 + 26 + 2, 0, 29, 100, {0, 0, 0xff, 0xff}},
@@ -171,6 +221,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        // dequeue disappeared boxes
         while (!q.empty() && q.front().getH() == 0) {
             q.pop_front();
         }
@@ -184,11 +235,37 @@ int main(int argc, char* argv[]) {
         keyboardTexture.render(renderer, 0, 0);
 
         const Uint8 *currentKeyState = SDL_GetKeyboardState(nullptr);
+        double dTimeNow = sound.GetTime();
         for (size_t i = 0; i < keyboardScancodes.size(); ++i) {
+            auto noteFound = std::find_if(vecNotes.begin(), vecNotes.end(), [&i](const synth::note& n) {
+                return n.id == i;
+            });
+            
+            // if the key is pressed
             if (currentKeyState[keyboardScancodes[i]]) {
                 keyTextures[i].render(renderer, 0, 0);
                 q.push_back(boxes[i]);
+
+                // if the note has not been active yet, start playing it
+                if (noteFound == vecNotes.end()) {
+                    synth::note newNote(i, dTimeNow);
+                    vecNotes.push_back(newNote);
+                }
+                // if the note is still being active, do nothing as the user simply keeps holding the key
             }
+            else {
+				// if the key is not pressed anymore and the note is still being active
+				if (noteFound != vecNotes.end()) {
+					// either put it in release mode
+					if (noteFound->dTimeOff < noteFound->dTimeOn) {
+						noteFound->dTimeOff = dTimeNow;
+					}
+					// or erase it if its release mode has finished
+					else if (dTimeNow - noteFound->dTimeOff > voice->env.dReleaseTime) {
+						vecNotes.erase(noteFound);
+					}					
+				}
+			}
         }
         
         SDL_RenderSetViewport(renderer, &topViewport);
